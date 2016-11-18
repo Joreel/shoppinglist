@@ -141,6 +141,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
         };
     }
 
+
     // =================================================
     // === ABSTRACT PARENT FUNCTIONS IMPLEMENTATIONS ===
     // =================================================
