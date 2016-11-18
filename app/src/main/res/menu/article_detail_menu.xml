@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.toolbar.MainActivity" >
+
+    <item
+        android:id="@+id/action_strikethrough"
+        android:title="@string/action_strikethrough"
+        android:icon="@drawable/ic_format_strikethrough_white_24px"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_edit_article"
+        android:title="@string/action_edit_article"
+        android:icon="@drawable/ic_edit_white_24px"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_edit_article_name"
+        android:title="@string/action_edit_name"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_edit_article_amount"
+        android:title="@string/action_edit_amount"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_remove_article"
+        android:title="Remove"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_exit_app"
+        android:title="@string/action_exit_app"
+        app:showAsAction="never"/>
+
+</menu>

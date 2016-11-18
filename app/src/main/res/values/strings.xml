@@ -1,0 +1,52 @@
+<resources>
+    <!-- App name -->
+    <string name="app_name">ShopShop</string>
+    <!-- Default article activity title -->
+    <string name="article_activity_title">Articles</string>
+    <!-- The id to pass the shop name from one activity to another -->
+    <string name="bundle_shopname_id">SHOPNAME</string>
+    <!-- The database name -->
+    <string name="db_name">shoplist</string>
+    <!-- Menu actions -->
+    <string name="action_remove_all">Remove all</string>
+    <string name="action_exit_app">Leave app</string>
+    <string name="action_edit_article">Edit article</string>
+    <string name="action_edit_name">Edit name</string>
+    <string name="action_edit_amount">Edit amount</string>
+    <string name="action_copy_to_clipboard">Copy to clipboard</string>
+    <string name="action_strikethrough">Strikethrough selection</string>
+    <string name="action_strikethrough_all">Strikethrough all</string>
+
+    <string name="action_sort_alpha">Sort by name</string>
+    <string name="action_remove_selection">Remove selection</string>
+
+    <string name="selected_count">Selected count: </string>
+
+    <!-- Available shops -->
+    <string name="colruyt">Colruyt</string>
+    <string name="carrefour">Carrefour</string>
+    <string name="spar">Spar</string>
+    <!-- Snackbar texts -->
+    <string name="snackbar_remove_all">Removed all articles of %1$s</string>
+    <string name="snackbar_remove_article"> Removed article %1$s</string>
+    <string name="snackbar_remove_selection">Removed selection</string>
+    <string name="snackbar_undo">UNDO</string>
+    <string name="snackbar_copy_to_clipboard">Articles copied to clipboard</string>
+
+    <!-- DIALOG STRINGS -->
+    <!-- The alertDialog placeholders -->
+    <string name="placeholder_article_name">Article name</string>
+    <string name="placeholder_article_amount">Article amount</string>
+    <!-- The alertDialog titles -->
+    <string name="dialog_title_add_article">Add article</string>
+    <string name="dialog_title_edit_article">Edit article</string>
+    <string name="dialog_title_edit_article_name">Edit article name</string>
+    <string name="dialog_title_edit_article_amount">Edit article amount</string>
+    <!-- The alertDialog choices -->
+    <string name="dialog_ok">Ok</string>
+    <string name="dialog_cancel">Cancel</string>
+    <!-- The dialog options when long pressing an article -->
+    <string name="dialog_option_update_article_name">Change article name</string>
+    <string name="dialog_option_update_article_amount">Change article amount</string>
+    <string name="dialog_option_remove_article">Remove article</string>
+</resources>
