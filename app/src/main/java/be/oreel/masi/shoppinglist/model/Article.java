@@ -1,5 +1,7 @@
 package be.oreel.masi.shoppinglist.model;
 
+import android.support.annotation.NonNull;
+
 /**
  * The article model
  */
@@ -16,23 +18,28 @@ public class Article implements Comparable<Article> {
     private boolean strikethrough;
     private int priority;
 
+    // =======================
+    // === IMPLEMENTATIONS ===
+    // =======================
+
+    /**
+     * Creates a string out of an article (amount + name)
+     * @return A string representation of an article
+     */
     @Override
     public String toString(){
         return getAmount() + " " + getName();
     }
 
+    /**
+     * Determines the order of articles in a list according to their priority
+     * @param article The article to be compared with
+     * @return Positive if priority is greater, negative if priority is lower, 0 if priority is equal
+     */
     @Override
-    public int compareTo(Article article) {
-        int result = this.getPriority() > article.getPriority() ? +1 :
+    public int compareTo(@NonNull Article article) {
+        return this.getPriority() > article.getPriority() ? +1 :
                 this.getPriority() < article.getPriority() ? -1 : 0;
-
-        return result;
-    }
-
-    public static void swapPriority(Article articleA, Article articleB){
-        int priorityA = articleA.getPriority();
-        articleA.setPriority(articleB.getPriority());
-        articleB.setPriority(priorityA);
     }
 
     // =========================
@@ -103,19 +110,34 @@ public class Article implements Comparable<Article> {
         this.amount = amount;
     }
 
-    //TODO
+    /**
+     * Returns whether or not the article is strikethrough
+     * @return whether or not the article is strikethrough
+     */
     public boolean isStrikethrough() {
         return strikethrough;
     }
 
+    /**
+     * Sets whether or not the article is strikethrough
+     * @param strikethrough Whether or not the article is strikethrough
+     */
     public void setStrikethrough(boolean strikethrough) {
         this.strikethrough = strikethrough;
     }
 
+    /**
+     * Returns the priority in a list of the article
+     * @return The priority in a list of the article
+     */
     public int getPriority() {
         return priority;
     }
 
+    /**
+     * Sets the priority in a list of an article
+     * @param priority The priority to be set
+     */
     public void setPriority(int priority) {
         this.priority = priority;
     }

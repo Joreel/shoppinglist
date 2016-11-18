@@ -67,7 +67,8 @@ public class ArticleDataSource {
      * @param shop The name of the shop in which the article is added
      * @param name The name of the article
      * @param amount The amount of the article
-     *               TODO
+     * @param strikethrough Whether or not the element is strikethrough
+     * @param priority The priority of the article in the list
      * @return The added article
      */
     public Article createArticle(String shop, String name, String amount,

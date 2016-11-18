@@ -3,7 +3,6 @@ package be.oreel.masi.shoppinglist.activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.DialogInterface;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,11 +15,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import be.oreel.masi.shoppinglist.adapter.ArticleManager;
@@ -46,8 +43,6 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     private ToolbarMode toolbarMode;
     private ClipboardManager clipboard;
 
-    private List<ArticleAdapter.ViewHolder> selectedItems;
-
     // ================
     // === ONCREATE ===
     // ================
@@ -61,36 +56,25 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
         super.onCreate(savedInstanceState);
 
         // Get the selected shop name from the MainActivity
+        // Set default value if no shop name was found
         Bundle b = getIntent().getExtras();
-        shopName = b != null ? b.getString(getString(R.string.bundle_shopname_id)) : null;
-        boolean shopNameRetrieved = shopName != null;
-        // Set the shop name as the title of this activity if it is not null
+        shopName = b != null ? b.getString(getString(R.string.bundle_shopname_id)) :
+                getString(R.string.article_activity_title);
+        // Set the shop name as the title of this activity
         if(getSupportActionBar() != null){
-            getSupportActionBar().setTitle(
-                    shopNameRetrieved ?
-                            shopName :
-                            getString(R.string.article_activity_title));
+            getSupportActionBar().setTitle(shopName);
         }
 
-        // Set variables
+        // Set the clipboard manager
         clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        selectedItems = new ArrayList<>();
-        toolbarMode = ToolbarMode.NORMAL;
-
-        // Setup the recyclerView and the the articles from the db
-        if(shopNameRetrieved){
-            // Get all articles from the shop
-            articles = getAllArticles(shopName);
-            // Create the adapter for the recyclerView
-            adapter = new ArticleAdapter(this, articles);
-            getRecyclerView().setAdapter(adapter);
-            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(getItemTouchCallback());
-            itemTouchHelper.attachToRecyclerView(getRecyclerView());
-        }
-        else{
-            //TODO set default shop name MyShop?
-        }
-
+        // Get all articles from the shop
+        articles = getAllArticles(shopName);
+        // Create the adapter for the recyclerView
+        adapter = new ArticleAdapter(this, articles);
+        getRecyclerView().setAdapter(adapter);
+        // Add the itemTouchHelper
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(getItemTouchCallback());
+        itemTouchHelper.attachToRecyclerView(getRecyclerView());
     }
 
     //TODO document
@@ -119,8 +103,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
             public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState){
                 if(toolbarMode != ToolbarMode.NORMAL && moved && actionState == ItemTouchHelper.ACTION_STATE_IDLE){
                     moved = false;
-                    showNormalToolbar();
-                    //mActionMode.finish();
+                    setToolbarMode(ToolbarMode.NORMAL);
                 }
             }
 
@@ -152,7 +135,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
                 removeArticle(viewHolder.getAdapterPosition());
                 if(toolbarMode != ToolbarMode.NORMAL){
-                    showNormalToolbar();
+                    setToolbarMode(ToolbarMode.NORMAL);
                 }
             }
         };
@@ -190,6 +173,184 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
             });
             fab.setImageDrawable(ContextCompat.getDrawable(getBaseContext(),
                     R.drawable.ic_add_white_24px));
+        }
+    }
+
+    // =========================================
+    // === OVERRIDE BASIC ACTIVITY FUNCTIONS ===
+    // =========================================
+
+    /**
+     * Sets the activity back in normal menu mode if it wasn't
+     * If the activity is already in normal menu mode, default parent behavior is applied
+     */
+    @Override
+    public void onBackPressed(){
+        // If in one of the selection modes, go back to normal mode
+        // Else default onBackPressed behavior
+        if(toolbarMode != ToolbarMode.NORMAL){
+            setToolbarMode(ToolbarMode.NORMAL);
+        }
+        else{
+            super.onBackPressed();
+            // Set a left to right transition effect when going back to the main activity
+            overridePendingTransition(R.anim.left_to_right_article, R.anim.right_to_left_article);
+        }
+    }
+
+    /**
+     * Creates the menu in the action bar
+     * @param menu
+     * @return
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.article_menu, menu);
+        return true;
+    }
+
+    /**
+     * Defines all the actions to be performed for each element in the toolbar menu
+     * @param item The menu item being pressed
+     * @return
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        // Check which menu item was selected
+        switch (id){
+            case android.R.id.home:
+                // Leave selection mode or go back to the main activity
+                onBackPressed();
+                break;
+            case R.id.action_remove_all:
+                // Remove all articles of the shop
+                removeArticles();
+                break;
+            case R.id.action_sort_alpha:
+                // Sort all articles by name
+                adapter.sortArticlesByName();
+                break;
+            case R.id.action_copy_to_clipboard:
+                // Copy all articles to the clipboard
+                copyArticlesToClipboard();
+                break;
+            case R.id.action_strikethrough:
+                // Strikethrough selected elements
+                adapter.toggleStrikethrough();
+                break;
+            case R.id.action_remove_article:
+                // Remove the selected article
+                removeArticle(adapter.getSelectedItemPosition());
+                return true;
+            case R.id.action_edit_article:
+                // Open the edit article dialog for the selected element
+                openEditArticleDialog(adapter.getSelectedItemPosition());
+                break;
+            case R.id.action_edit_article_name:
+                // Open the edit article name dialog for the selected element
+                openEditArticleNameDialog(adapter.getSelectedItemPosition());
+                break;
+            case R.id.action_edit_article_amount:
+                // Open the edit article amount dialog for the selected element
+                openEditArticleAmountDialog(adapter.getSelectedItemPosition());
+                break;
+            case R.id.action_exit_app:
+                // Leave the app
+                leaveApp();
+                break;
+        }
+
+        // Go back to normal menu mode if it isn't already the case
+        // after performing the selected action
+        if(toolbarMode != ToolbarMode.NORMAL){
+            setToolbarMode(ToolbarMode.NORMAL);
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Resume of the activity
+     */
+    @Override
+    protected void onResume() {
+        datasource.open();
+        setToolbarMode(ToolbarMode.NORMAL);
+        super.onResume();
+    }
+
+    /**
+     * Pause of the activity
+     */
+    @Override
+    protected void onPause() {
+        adapter.savePositions();
+        datasource.close();
+        super.onPause();
+    }
+
+    // =====================
+    // === TOOLBAR MODES ===
+    // =====================
+
+    /**
+     * Change the toolbar menu to the default list menu
+     * Displays menu items available for the whole list
+     */
+    private void showNormalToolbar(){
+        getToolbar().getMenu().clear();
+        getToolbar().inflateMenu(R.menu.article_menu);
+        adapter.clearSelections();
+    }
+
+    /**
+     * Change the toolbar menu to the action mode menu
+     * Displays menu items available for one selected element in the list
+     */
+    private void showActionModeToolbar(){
+        getToolbar().getMenu().clear();
+        getToolbar().inflateMenu(R.menu.article_detail_menu);
+    }
+
+    /**
+     * Change the toolbar menu to the multiple mode menu
+     * Displays menu items available for multiple selected elements in the list
+     */
+    private void showMultipleModeToolbar(){
+        getToolbar().getMenu().clear();
+        getToolbar().inflateMenu(R.menu.article_multiple_menu);
+    }
+
+    /**
+     * Returns the current toolbarMode
+     * @return The current toolbarMode
+     */
+    @Override
+    public ToolbarMode getToolbarMode(){
+        return toolbarMode;
+    }
+
+    /**
+     * Sets the toolbarMode
+     * @param mode The new toolbarMode
+     */
+    @Override
+    public void setToolbarMode(ToolbarMode mode){
+        this.toolbarMode = mode;
+        if(toolbarMode == ToolbarMode.NORMAL){
+            System.out.println("NORMAL");
+            showNormalToolbar();
+        }
+        else if(toolbarMode == ToolbarMode.DETAIL){
+            System.out.println("DETAIL");
+            showActionModeToolbar();
+        }
+        else if(toolbarMode == ToolbarMode.MULTIPLE){
+            System.out.println("MULTIPLE");
+            showMultipleModeToolbar();
         }
     }
 
@@ -262,7 +423,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * Creates and shows a dialog to change the selected article's name
      * @param position The position of the article in the list
      */
-    public void openEditArticleNameDialog(final int position) {
+    private void openEditArticleNameDialog(final int position) {
         // Create the dialog to change the name
         Article article = articles.get(position);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -293,7 +454,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * Creates and shows a dialog to update the article's amount
      * @param position The postion of the article in the list
      */
-    public void openEditArticleAmountDialog(final int position) {
+    private void openEditArticleAmountDialog(final int position) {
         // Create the dialog to change the amount
         Article article = articles.get(position);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -340,7 +501,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * Adds a deleted article to the list
      * @param article The deleted article
      */
-    public void addArticle(Article article){
+    private void addArticle(Article article){
         Article newArticle = datasource.createArticle(shopName, article.getName(),
                 article.getAmount(), article.isStrikethrough(), article.getPriority());
         articles.add(newArticle);
@@ -395,7 +556,8 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * Update an article in the db
      * @param article The article to update
      */
-    private void updateArticle(Article article) {
+    @Override
+    public void updateArticle(Article article) {
         // TODO optimize?
         datasource.updateArticle(article);
     }
@@ -451,16 +613,12 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     public void removeArticles(){
         final List<Article> articlesBackup;
         String snackbarText;
-        //TODO
-        //adapter.isEmpty()
-        //adapter.getSelectedItemsSize()
-        if(selectedItems.size() > 0){
+
+        if(adapter.hasSelectedItems()){
             snackbarText = getString(R.string.snackbar_remove_selection);
             articlesBackup = new ArrayList<>();
-            //TODO
-            //adapter.getSelectedArticlePositions()
-            for(ArticleAdapter.ViewHolder holder : selectedItems){
-                int position = holder.getAdapterPosition();
+            List<Integer> positions = adapter.getSelectedPositions();
+            for(int position : positions){
                 Article article = articles.get(position);
                 articlesBackup.add(article);
                 articles.remove(position);
@@ -515,70 +673,15 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
             addArticle(article);
         }
     }
-    
+
     // =======================
     // === OTHER FUNCTIONS ===
     // =======================
 
-    /**
-     * Save all list item positions
-     */
-    private void savePositions(){
-        // Save all positions
-        // TODO THREAD THIS
-        for (int i = 0; i < articles.size(); i++){
-            Article article = articles.get(i);
-            article.setPriority(i);
-            System.out.print("Updated article " + article.getName() +
-                    " to position " + article.getPriority());
-            updateArticle(article);
-        }
-    }
-    
-    /**
-     * Toggle strikethrough on all selected elements
-     */
-    private void toggleStrikethrough(){
-        for (ArticleAdapter.ViewHolder holder : selectedItems){
-            Article article = articles.get(holder.getAdapterPosition());
-            boolean isStrikeThrough = article.isStrikethrough();
-            if(isStrikeThrough){
-                holder.tvName.setPaintFlags(holder.tvName.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
-                holder.tvAmount.setPaintFlags(holder.tvAmount.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
-            }
-            else{
-                holder.tvName.setPaintFlags(holder.tvName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-                holder.tvAmount.setPaintFlags(holder.tvAmount.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            }
-            //TODO
-            // adapter.toggleStrikethrough()
-
-            article.setStrikethrough(!isStrikeThrough);
-            updateArticle(article);
-        }
-    }
-
     private void copyArticlesToClipboard(){
-        String articlesCopy = "";
-        
-        //TODO 
-        //adapter.getSelectedItemsSize()
-        if(selectedItems.size() > 0){
-            //TODO
-            //adapter.getSelectedItemsToString()
-            for (ArticleAdapter.ViewHolder holder : selectedItems){
-                articlesCopy += articles.get(holder.getAdapterPosition()).toString()  + "\n";
-            }
-        }
-        else{
-            for(Article article : articles){
-                articlesCopy += article.toString() + "\n";
-            }
-        }
-
         //http://stackoverflow.com/questions/6624763/android-copy-to-clipboard-selected-text-from-a-textview
         //  Add details to clipboard
-        ClipData clip = ClipData.newPlainText("Copied Details", articlesCopy);
+        ClipData clip = ClipData.newPlainText("Copied Details", adapter.getArticlesToString());
         clipboard.setPrimaryClip(clip);
 
         //  Add snackbar notification
@@ -587,243 +690,5 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 getString(R.string.snackbar_copy_to_clipboard),
                 Snackbar.LENGTH_SHORT);
         snackbar.show();
-    }
-
-    /**
-     * Sort articles by name
-     */
-    private void sortArticlesByName(){
-        Collections.sort(articles, new Comparator<Article>(){
-            public int compare(Article articleA, Article articleB) {
-                return articleA.getName().compareTo(articleB.getName());
-            }
-        });
-        adapter.notifyItemRangeChanged(0, articles.size());
-    }
-
-    // ===========================
-    // === SELECTION FUNCTIONS ===
-    // ===========================
-
-    /**
-     * Start action mode
-     * @param view
-     * @param viewHolder
-     * @param textViews
-     * @return
-     */
-    @Override
-    public boolean startActionMode(final View view, final ArticleAdapter.ViewHolder viewHolder,
-                                   final List<TextView> textViews) {
-
-        if(toolbarMode == ToolbarMode.NORMAL){
-            toolbarMode = ToolbarMode.DETAIL;
-            toggleSelection(viewHolder);
-            //TODO
-            //adapter.toggleSelection()? or getToolbarMode()
-        }
-
-        return true;
-    }
-    
-    /**
-     * Selects the item if it isn't, deselect the item if it already is selected
-     * @param holder
-     */
-    @Override
-    public void toggleSelection(ArticleAdapter.ViewHolder holder){
-        //if(mActionMode != null){
-        if(toolbarMode != ToolbarMode.NORMAL){
-            //TODO
-            //adapter.toggleSelection()
-            boolean isSelected = holder.contentParent.isSelected();
-            if(isSelected){
-                selectedItems.remove(holder);
-            }
-            else{
-                selectedItems.add(holder);
-            }
-            holder.contentParent.setSelected(!isSelected);
-            //TODO
-            //adapter.getSelectedItemsSize()
-            if(toolbarMode != ToolbarMode.MULTIPLE && selectedItems.size() > 1){
-                showMultipleModeToolbar();
-            }
-            else if(selectedItems.size() == 0){
-                showNormalToolbar();
-                //mActionMode.finish();
-            }
-            else if(selectedItems.size() == 1){
-                showActionModeToolbar();
-            }
-        }
-    }
-
-    /**
-     * Clears list item selection
-     */
-    private void clearSelections(){
-        for(ArticleAdapter.ViewHolder holder : selectedItems){
-            holder.contentParent.setSelected(false);
-        }
-
-        selectedItems.clear();
-
-        //TODO
-        //adapter.clearSelection();
-    }
-
-    // =========================================
-    // === OVERRIDE BASIC ACTIVITY FUNCTIONS ===
-    // =========================================
-
-    /**
-     * Sets the activity back in normal menu mode if it wasn't
-     * If the activity is already in normal menu mode, default parent behavior is applied
-     */
-    @Override
-    public void onBackPressed(){
-        // If in one of the selection modes, go back to normal mode
-        // Else default onBackPressed behavior
-        if(toolbarMode != ToolbarMode.NORMAL){
-            showNormalToolbar();
-        }
-        else{
-            super.onBackPressed();
-            // Set a left to right transition effect when going back to the main activity
-            overridePendingTransition(R.anim.left_to_right_article, R.anim.right_to_left_article);
-        }
-    }
-
-    /**
-     * Creates the menu in the action bar
-     * @param menu
-     * @return
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.article_menu, menu);
-        return true;
-    }
-
-    /**
-     * Defines all the actions to be performed for each element in the toolbar menu
-     * @param item The menu item being pressed
-     * @return
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        //TODO
-        //adapter.getSelectedElement()
-
-        // Check which menu item was selected
-        switch (id){
-            case android.R.id.home:
-                // Leave selection mode or go back to the main activity
-                onBackPressed();
-                break;
-            case R.id.action_remove_all:
-                // Remove all articles of the shop
-                removeArticles();
-                break;
-            case R.id.action_sort_alpha:
-                // Sort all articles by name
-                sortArticlesByName();
-                break;
-            case R.id.action_copy_to_clipboard:
-                // Copy all articles to the clipboard
-                copyArticlesToClipboard();
-                break;
-            case R.id.action_strikethrough:
-                // Strikethrough selected elements
-                toggleStrikethrough();
-                break;
-            case R.id.action_remove_article:
-                // Remove the selected article
-                removeArticle(selectedItems.get(0).getAdapterPosition());
-                return true;
-            case R.id.action_edit_article:
-                // Open the edit article dialog for the selected element
-                openEditArticleDialog(selectedItems.get(0).getAdapterPosition());
-                break;
-            case R.id.action_edit_article_name:
-                // Open the edit article name dialog for the selected element
-                openEditArticleNameDialog(selectedItems.get(0).getAdapterPosition());
-                break;
-            case R.id.action_edit_article_amount:
-                // Open the edit article amount dialog for the selected element
-                openEditArticleAmountDialog(selectedItems.get(0).getAdapterPosition());
-                break;
-            case R.id.action_exit_app:
-                // Leave the app
-                leaveApp();
-                break;
-        }
-
-        // Go back to normal menu mode if it isn't already the case
-        // after performing the selected action
-        if(toolbarMode != ToolbarMode.NORMAL){
-            showNormalToolbar();
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * Resume of the activity
-     */
-    @Override
-    protected void onResume() {
-        datasource.open();
-        showNormalToolbar();
-        super.onResume();
-    }
-
-    /**
-     * Pause of the activity
-     */
-    @Override
-    protected void onPause() {
-        savePositions();
-        datasource.close();
-        super.onPause();
-    }
-
-    // =====================
-    // === TOOLBAR MODES ===
-    // =====================
-
-    /**
-     * Change the toolbar menu to the default list menu
-     * Displays menu items available for the whole list
-     */
-    private void showNormalToolbar(){
-        toolbarMode = ToolbarMode.NORMAL;
-        getToolbar().getMenu().clear();
-        getToolbar().inflateMenu(R.menu.article_menu);
-        clearSelections();
-    }
-
-    /**
-     * Change the toolbar menu to the action mode menu
-     * Displays menu items available for one selected element in the list
-     */
-    private void showActionModeToolbar(){
-        toolbarMode = ToolbarMode.DETAIL;
-        getToolbar().getMenu().clear();
-        getToolbar().inflateMenu(R.menu.article_detail_menu);
-    }
-
-    /**
-     * Change the toolbar menu to the multiple mode menu
-     * Displays menu items available for multiple selected elements in the list
-     */
-    private void showMultipleModeToolbar(){
-        toolbarMode = ToolbarMode.MULTIPLE;
-        getToolbar().getMenu().clear();
-        getToolbar().inflateMenu(R.menu.article_multiple_menu);
     }
 }

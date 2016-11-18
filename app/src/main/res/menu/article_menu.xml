@@ -11,12 +11,6 @@
         app:showAsAction="ifRoom"/>
 
     <item
-        android:id="@+id/action_strikethrough"
-        android:title="@string/action_strikethrough_all"
-        android:icon="@drawable/ic_format_strikethrough_white_24px"
-        app:showAsAction="always"/>
-
-    <item
         android:id="@+id/action_sort_alpha"
         android:title="@string/action_sort_alpha"
         android:icon="@drawable/ic_sort_by_alpha_white_24px"
