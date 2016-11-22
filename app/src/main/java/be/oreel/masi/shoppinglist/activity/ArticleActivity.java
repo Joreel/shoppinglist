@@ -739,6 +739,8 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 // Delete the article from the database
                 datasource.deleteArticle(article);
             }
+            // Reverse back the removed articles list
+            Collections.reverse(articlesBackup);
         } // If there are articles
         else if(hasArticles) {
             snackbarText = String.format(getString(R.string.snackbar_remove_all), shopName);
@@ -797,8 +799,6 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @param removedArticles The removed articles to add back to the list
      */
     private void undoRemove(List<Article> removedArticles){
-        // Reverse back the removed articles list
-        Collections.reverse(removedArticles);
         // Add all removed articles back to the list
         for (Article article : removedArticles){
             addArticle(article);
