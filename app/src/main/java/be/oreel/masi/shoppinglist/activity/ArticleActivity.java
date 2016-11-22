@@ -80,53 +80,108 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
         // Add the itemTouchHelper
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(getItemTouchCallback());
         itemTouchHelper.attachToRecyclerView(recyclerView);
-
+        // Add the line dividers between the recyclerView Items
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(
                 getRecyclerView().getContext(),
                 LinearLayoutManager.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
     }
 
-    //TODO document
+    // ====================
+    // === RECYCLERVIEW ===
+    // ====================
+
+    /**
+     * Creates the ItemTouchHelper Callback for the recyclerView of the ArticleActivity
+     * @return The ItemTouchHelper Callback
+     */
     private ItemTouchHelper.Callback getItemTouchCallback(){
         return new ItemTouchHelper.Callback() {
 
+            // Whether a item is being moved
             private boolean moved = false;
 
+            /**
+             * Enables the drag functionality of the recyclerView
+             * @return True
+             */
+            @Override
             public boolean isLongPressDragEnabled() {
                 return true;
             }
 
+            /**
+             * Enables the swipe functionality of the recyclerView
+             * @return True
+             */
             @Override
             public boolean isItemViewSwipeEnabled() {
                 return true;
             }
 
+            /**
+             * Sets the swipe functionality only on the horizontal axis
+             * Sets the drag functionality only on the vertical axis
+             * @param recyclerView The recyclerView
+             * @param viewHolder The selected ViewHolder
+             * @return
+             */
             @Override
             public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                // Sets the drag functionality only on the vertical axis
                 int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+                // Sets the swipe functionality only on the horizontal axis
                 int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
                 return makeMovementFlags(dragFlags, swipeFlags);
             }
 
+            /**
+             * Changes the toolbar mode back to normal after having moved an item
+             * @param viewHolder The viewHolder being moved
+             * @param actionState The actionState
+             */
             @Override
             public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState){
+                // If the toolbar mode is not already in normal and an item is dropped
                 if(toolbarMode != ToolbarMode.NORMAL && moved && actionState == ItemTouchHelper.ACTION_STATE_IDLE){
+                    // State that the item is not being moved anymore
                     moved = false;
+                    // Go back to normal mode
                     setToolbarMode(ToolbarMode.NORMAL);
                 }
             }
 
+            /**
+             * States that a recyclerView item is being moved
+             * @param recyclerView The recyclerView
+             * @param viewHolder The viewHolder being moved
+             * @param fromPos Starting position
+             * @param target The viewHolder at the target position
+             * @param toPos End position
+             * @param x x
+             * @param y y
+             */
             @Override
             public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
-                                int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y){
+                                int fromPos, RecyclerView.ViewHolder target, int toPos,
+                                int x, int y){
+                // State that an item is being moved
                 moved = true;
             }
 
+            /**
+             * Moves the viewHolders accordingly when dragging them
+             * @param recyclerView The recyclerView
+             * @param viewHolder The viewHolder being moved
+             * @param target The target viewHolder
+             * @return True
+             */
             @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                                  RecyclerView.ViewHolder target) {
                 int fromPosition = viewHolder.getLayoutPosition();
                 int toPosition = target.getLayoutPosition();
+                // Swap the articles of the viewHolders
                 if (fromPosition < toPosition) {
                     for (int i = fromPosition; i < toPosition; i++) {
                         Collections.swap(articles, i, i + 1);
@@ -136,14 +191,22 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                         Collections.swap(articles, i, i - 1);
                     }
                 }
+                // Notify that items have been moved
                 adapter.notifyItemMoved(fromPosition, toPosition);
 
                 return true;
             }
 
+            /**
+             * Removes an article of the list when swiping it away
+             * @param viewHolder The viewHolder to remove
+             * @param swipeDir The swipe direction
+             */
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                // Remove the article
                 removeArticle(viewHolder.getAdapterPosition());
+                // If not in toolbar mode normal, go back to toolbar mode normal
                 if(toolbarMode != ToolbarMode.NORMAL){
                     setToolbarMode(ToolbarMode.NORMAL);
                 }
@@ -175,13 +238,16 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     protected void setupFab() {
         FloatingActionButton fab = getFab();
         if (fab != null) {
+            // Make the fab visible
             fab.bringToFront();
+            // Open the add article dialog when pressed
             fab.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View view) {
                     openAddArticleDialog();
                 }
             });
+            // Set the add icon
             fab.setImageDrawable(ContextCompat.getDrawable(getBaseContext(),
                     R.drawable.ic_add_white_24px));
         }
@@ -211,8 +277,8 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
 
     /**
      * Creates the menu in the action bar
-     * @param menu
-     * @return
+     * @param menu The menu
+     * @return True
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -224,7 +290,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     /**
      * Defines all the actions to be performed for each element in the toolbar menu
      * @param item The menu item being pressed
-     * @return
+     * @return The super method return
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -288,7 +354,9 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      */
     @Override
     protected void onResume() {
+        // Opens the database
         datasource.open();
+        // Set the toolbar mode to normal
         setToolbarMode(ToolbarMode.NORMAL);
         super.onResume();
     }
@@ -298,7 +366,9 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      */
     @Override
     protected void onPause() {
+        // Save all the positions of the articles
         adapter.savePositions();
+        // Close the database
         datasource.close();
         super.onPause();
     }
@@ -314,6 +384,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     private void showNormalToolbar(){
         getToolbar().getMenu().clear();
         getToolbar().inflateMenu(R.menu.article_menu);
+        // Clears the selections
         adapter.clearSelections();
     }
 
@@ -352,15 +423,12 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     public void setToolbarMode(ToolbarMode mode){
         this.toolbarMode = mode;
         if(toolbarMode == ToolbarMode.NORMAL){
-            System.out.println("NORMAL");
             showNormalToolbar();
         }
         else if(toolbarMode == ToolbarMode.DETAIL){
-            System.out.println("DETAIL");
             showActionModeToolbar();
         }
         else if(toolbarMode == ToolbarMode.MULTIPLE){
-            System.out.println("MULTIPLE");
             showMultipleModeToolbar();
         }
     }
@@ -378,6 +446,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
         // Get the elements from the dialog content
         LinearLayout contentParent = (LinearLayout) getLayoutInflater().
                 inflate(R.layout.dialog_article, null);
+        // Get the editText views from the dialog
         final EditText inputName = (EditText) contentParent.getChildAt(0);
         final EditText inputAmount = (EditText) contentParent.getChildAt(1);
 
@@ -385,6 +454,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 setTitle(R.string.dialog_title_add_article).
                 setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        // When pressing Ok, add the article to list if the name field is not empty
                         String name = inputName.getText().toString();
                         if(!name.trim().isEmpty()){
                             addArticle(name,
@@ -392,9 +462,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                         }
                     }
                 }).
-                setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {}
-                }).
+                setNegativeButton(R.string.dialog_cancel, null).
                 create().
                 show();
     }
@@ -410,6 +478,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
         // Get the elements from the dialog content
         LinearLayout contentParent = (LinearLayout) getLayoutInflater().
                 inflate(R.layout.dialog_article, null);
+        // Get the editText views from the dialog
         final EditText inputName = (EditText) contentParent.getChildAt(0);
         final EditText inputAmount = (EditText) contentParent.getChildAt(1);
         // Set the existing information in the dialog content
@@ -422,6 +491,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 setTitle(R.string.dialog_title_edit_article).
                 setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        // Update the article data if the name field is not empty
                         String name = inputName.getText().toString();
                         if(!name.trim().isEmpty()) {
                             updateArticle(position, name,
@@ -429,9 +499,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                         }
                     }
                 }).
-                setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {}
-                }).
+                setNegativeButton(R.string.dialog_cancel, null).
                 create().
                 show();
     }
@@ -457,15 +525,14 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 setTitle(R.string.dialog_title_edit_article_name).
                 setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        // Update the article name if the name field is not empty
                         String name = input.getText().toString();
                         if(!name.trim().isEmpty()) {
                             updateArticleName(position, name);
                         }
                     }
                 }).
-                setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {}
-                }).
+                setNegativeButton(R.string.dialog_cancel, null).
                 create().
                 show();
     }
@@ -491,12 +558,11 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 setTitle(R.string.dialog_title_edit_article_amount).
                 setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        // Update the article amount
                         updateArticleAmount(position, input.getText().toString());
                     }
                 }).
-                setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {}
-                }).
+                setNegativeButton(R.string.dialog_cancel, null).
                 create().
                 show();
     }
@@ -511,9 +577,12 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @param amount The amount of the new article
      */
     private void addArticle(String name, String amount){
+        // Create a new article in the database
         Article newArticle = datasource.createArticle(shopName, name, amount,
                 false, articles.size());
+        // Add the new article to the list
         articles.add(newArticle);
+        // Notify the recyclerView that an item was added
         adapter.notifyItemInserted(articles.size() - 1);
     }
 
@@ -522,9 +591,12 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @param article The deleted article
      */
     private void addArticle(Article article){
+        // Adds a new article to the database
         Article newArticle = datasource.createArticle(shopName, article.getName(),
                 article.getAmount(), article.isStrikethrough(), article.getPriority());
+        // Adds the new article to the list
         articles.add(newArticle);
+        // Notify the recyclerView that an item was added
         adapter.notifyItemInserted(articles.size()-1);
     }
 
@@ -539,10 +611,14 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @param newAmount The new amount of the article
      */
     private void updateArticle(int position, String newName, String newAmount) {
+        // Get the article from the list
         Article article = articles.get(position);
+        // Update the article data
         article.setName(newName);
         article.setAmount(newAmount);
+        // Notify the recyclerView that an item was updated
         adapter.notifyItemChanged(position);
+        // Update the article in the database
         datasource.updateArticle(article);
     }
 
@@ -552,9 +628,13 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @param newName The new name of the article
      */
     private void updateArticleName(int position, String newName) {
+        // Get the article from the list
         Article article = articles.get(position);
+        // Update the article name
         article.setName(newName);
+        // Notify the recyclerView that an item was updated
         adapter.notifyItemChanged(position);
+        // Update the article in the database
         datasource.updateArticle(article);
     }
 
@@ -564,9 +644,13 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @param newAmount The new amount of the article
      */
     private void updateArticleAmount(int position, String newAmount) {
+        // Get the article from the list
         Article article = articles.get(position);
+        // Update the article amount
         article.setAmount(newAmount);
+        // Notify the recyclerView that an item was updated
         adapter.notifyItemChanged(position);
+        // Update the article in the database
         datasource.updateArticle(article);
     }
 
@@ -576,7 +660,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      */
     @Override
     public void updateArticle(Article article) {
-        // TODO optimize?
+        // Update the article in the database
         datasource.updateArticle(article);
     }
 
@@ -619,6 +703,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 setAction(getString(R.string.snackbar_undo), new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        // Unde the removal
                         undoRemove(article, position);
                     }
                 });
@@ -631,8 +716,10 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     public void removeArticles(){
         final List<Article> articlesBackup;
         String snackbarText;
+        // Whether there are articles in the list
         boolean hasArticles = !articles.isEmpty();
 
+        // If some items are selected, only remove those articles
         if(adapter.hasSelectedItems()){
             snackbarText = getString(R.string.snackbar_remove_selection);
             articlesBackup = new ArrayList<>();
@@ -640,32 +727,44 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
             // Make sure the positions are deleted from biggest to smallest
             Collections.sort(positions);
             Collections.reverse(positions);
+            // Remove each selected article
             for(int position : positions){
                 Article article = articles.get(position);
+                // Back up the article in case the action is undone
                 articlesBackup.add(article);
+                // Remove the article from the list
                 articles.remove(position);
+                // Notify the recyclerView that an item was removed
                 adapter.notifyItemRemoved(position);
+                // Delete the article from the database
                 datasource.deleteArticle(article);
             }
-        }
+        } // If there are articles
         else if(hasArticles) {
             snackbarText = String.format(getString(R.string.snackbar_remove_all), shopName);
+            // Backup all articles in case the action is undone
             articlesBackup = new ArrayList<>(articles);
+            // Clear the article list
             articles.clear();
+            // Notify the recyclerView that all items were removed
             adapter.notifyItemRangeRemoved(0, articlesBackup.size());
+            // Delete all articles of the cuurent shop in the database
             datasource.deleteAllArticles(shopName);
         }
         else{
+            // Prepare the snackbar in case there are no articles
             snackbarText = getString(R.string.snackbar_no_articles_to_remove);
             articlesBackup = null;
         }
         // Show snackbar
         Snackbar snackbar = Snackbar.
                 make(getCoordinatorLayout(), snackbarText, Snackbar.LENGTH_LONG);
+        // If there are articles, allow an undo
         if(hasArticles){
             snackbar.setAction(getString(R.string.snackbar_undo), new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    // Undo the removal of the removed articles
                     undoRemove(articlesBackup);
                 }
             });
@@ -689,6 +788,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 article.isStrikethrough(), article.getPriority());
         // Add the article to the list at the right position
         articles.add(position, newArticle);
+        // Notify the recyclerView that an item was inserted
         adapter.notifyItemInserted(position);
     }
 
@@ -697,7 +797,9 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @param removedArticles The removed articles to add back to the list
      */
     private void undoRemove(List<Article> removedArticles){
+        // Reverse back the removed articles list
         Collections.reverse(removedArticles);
+        // Add all removed articles back to the list
         for (Article article : removedArticles){
             addArticle(article);
         }
@@ -707,10 +809,14 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     // === OTHER FUNCTIONS ===
     // =======================
 
+    /**
+     * Copy articles (all or selected) to the clipboard
+     */
     private void copyArticlesToClipboard(){
         String snackbarText;
         boolean hasArticles = !articles.isEmpty();
 
+        // If there are articles in the list, copy them (or the selection)
         if(hasArticles){
             snackbarText = getString(R.string.snackbar_copy_to_clipboard);
             //  Add details to clipboard
@@ -718,6 +824,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
             clipboard.setPrimaryClip(clip);
         }
         else{
+            // Prepare the snackbar in case there are no articles
             snackbarText = getString(R.string.snackbar_no_articles_to_copy);
         }
 

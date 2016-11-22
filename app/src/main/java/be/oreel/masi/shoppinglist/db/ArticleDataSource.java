@@ -73,20 +73,24 @@ public class ArticleDataSource {
      */
     public Article createArticle(String shop, String name, String amount,
                                  boolean strikethrough, int priority) {
+        // Add all the values of the article
         ContentValues values = new ContentValues();
         values.put(ArticleDBHelper.COLUMN_SHOP_NAME, shop);
         values.put(ArticleDBHelper.COLUMN_ARTICLE_NAME, name);
         values.put(ArticleDBHelper.COLUMN_AMOUNT, amount);
         values.put(ArticleDBHelper.COLUMN_STRIKETHROUGH, strikethrough ? 1 : 0);
         values.put(ArticleDBHelper.COLUMN_PRIORITY, priority);
+        // Insert the article in the database
         long insertId = database.insert(ArticleDBHelper.TABLE_ARTICLE, null,
                 values);
+        // Take the data of the new article with its newly created id
         Cursor cursor = database.query(ArticleDBHelper.TABLE_ARTICLE,
                 allColumns, ArticleDBHelper.COLUMN_ID + " = " + insertId, null,
                 null, null, null);
         cursor.moveToFirst();
         Article newArticle = cursorToArticle(cursor);
         cursor.close();
+        // Return the new article
         return newArticle;
     }
 
@@ -95,11 +99,13 @@ public class ArticleDataSource {
      * @param article The article to update
      */
     public void updateArticle(Article article){
+        // Add the values to be update
         ContentValues values = new ContentValues();
         values.put(ArticleDBHelper.COLUMN_ARTICLE_NAME, article.getName());
         values.put(ArticleDBHelper.COLUMN_AMOUNT, article.getAmount());
         values.put(ArticleDBHelper.COLUMN_STRIKETHROUGH, article.isStrikethrough() ? 1 : 0);
         values.put(ArticleDBHelper.COLUMN_PRIORITY, article.getPriority());
+        // Update the article
         database.update(ArticleDBHelper.TABLE_ARTICLE, values,
                 ArticleDBHelper.COLUMN_ID + " = " + article.getId(), null);
     }
@@ -110,7 +116,7 @@ public class ArticleDataSource {
      */
     public void deleteArticle(Article article) {
         long id = article.getId();
-        System.out.println("Article deleted with id: " + id);
+        // Remove the article from the database
         database.delete(ArticleDBHelper.TABLE_ARTICLE,
                 ArticleDBHelper.COLUMN_ID
                 + " = " + id, null);
@@ -121,6 +127,7 @@ public class ArticleDataSource {
      * @param shop The name of the shop to clear
      */
     public void deleteAllArticles(String shop){
+        // Delete all articles of a shop from the database
         database.delete(ArticleDBHelper.TABLE_ARTICLE,
                 ArticleDBHelper.COLUMN_SHOP_NAME + " = '" + shop + "'", null);
     }
@@ -132,10 +139,10 @@ public class ArticleDataSource {
      */
     public List<Article> getAllArticles(String shop) {
         List<Article> articles = new ArrayList<>();
-
+        // Get all articles of a shop from the database
         Cursor cursor = database.query(ArticleDBHelper.TABLE_ARTICLE,
                 allColumns, ArticleDBHelper.COLUMN_SHOP_NAME + " = '" + shop + "'", null, null, null, null);
-
+        // Convert all data to an article list
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             Article article = cursorToArticle(cursor);
@@ -160,6 +167,7 @@ public class ArticleDataSource {
      * @return The article from the cursor
      */
     private Article cursorToArticle(Cursor cursor) {
+        // Convert article data from a cursor to an article object
         Article article = new Article();
         article.setId(cursor.getLong(0));
         article.setShop(cursor.getString(1));

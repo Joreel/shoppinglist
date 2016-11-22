@@ -57,8 +57,8 @@ public class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHolder> {
 
     /**
      * Creates the new views (invoked by the layout manager)
-     * @param parent
-     * @param viewType
+     * @param parent The parent viewGroup
+     * @param viewType The view type
      * @return The new viewHolder
      */
     @Override
@@ -70,8 +70,8 @@ public class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHolder> {
 
     /**
      * Replaces the contents of a view (invoked by the layout manager)
-     * @param holder
-     * @param position
+     * @param holder The viewHolder
+     * @param position The position of the viewHolder in the list
      */
     @Override
     public void onBindViewHolder(LogoAdapter.ViewHolder holder, int position) {

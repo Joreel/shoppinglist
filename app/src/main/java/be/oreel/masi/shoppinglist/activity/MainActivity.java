@@ -61,6 +61,7 @@ public class MainActivity extends RecyclerActivity implements LogoManager {
     protected void setupFab() {
         FloatingActionButton fab = getFab();
         if(fab != null){
+            // Hides the fab
             fab.hide();
         }
     }
@@ -72,12 +73,13 @@ public class MainActivity extends RecyclerActivity implements LogoManager {
     /**
      * Sets the actions to perform for each element in the action bar
      * @param item The menu item being pressed
-     * @return
+     * @return The parent method return
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
+        // Leave the app when the action 'leave app' is pressed
         if (id == R.id.action_exit_app) {
             leaveApp();
         }
@@ -87,8 +89,8 @@ public class MainActivity extends RecyclerActivity implements LogoManager {
 
     /**
      * Creates the menu in the action bar
-     * @param menu
-     * @return
+     * @param menu The menu
+     * @return True
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -106,9 +108,12 @@ public class MainActivity extends RecyclerActivity implements LogoManager {
      * @param shopName The shop name
      */
     public void openArticleActivity(String shopName){
+        // Create the intent to open the ArticleActivity
         Intent intent = new Intent(this, ArticleActivity.class);
         intent.putExtra(getString(R.string.bundle_shopname_id), shopName);
+        // Start the ArticleActivity
         startActivity(intent);
+        // Set the right to left animation
         overridePendingTransition(R.anim.right_to_left_main, R.anim.left_to_right_main);
     }
 }

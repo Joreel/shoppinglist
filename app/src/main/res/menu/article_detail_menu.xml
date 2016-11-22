@@ -11,15 +11,15 @@
         app:showAsAction="ifRoom"/>
 
     <item
-        android:id="@+id/action_edit_article"
-        android:title="@string/action_edit_article"
-        android:icon="@drawable/ic_edit_white_24px"
-        app:showAsAction="ifRoom"/>
-
-    <item
         android:id="@+id/action_copy_to_clipboard"
         android:title="@string/action_copy_to_clipboard"
         android:icon="@drawable/ic_content_copy_white_24px"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_edit_article"
+        android:title="@string/action_edit_article"
+        android:icon="@drawable/ic_edit_white_24px"
         app:showAsAction="ifRoom"/>
 
     <item

@@ -73,9 +73,11 @@ public abstract class RecyclerActivity extends AppCompatActivity {
      * Leaves the app and goes to the home screen, the app is still running in the background
      */
     protected void leaveApp(){
+        // Create the intent to leave the app
         Intent homeIntent = new Intent(Intent.ACTION_MAIN);
         homeIntent.addCategory( Intent.CATEGORY_HOME );
         homeIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        // Leave the app
         startActivity(homeIntent);
     }
 
