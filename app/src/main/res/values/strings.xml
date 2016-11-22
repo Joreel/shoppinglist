@@ -16,11 +16,8 @@
     <string name="action_copy_to_clipboard">Copy to clipboard</string>
     <string name="action_strikethrough">Strikethrough selection</string>
     <string name="action_strikethrough_all">Strikethrough all</string>
-
     <string name="action_sort_alpha">Sort by name</string>
     <string name="action_remove_selection">Remove selection</string>
-
-    <string name="selected_count">Selected count: </string>
 
     <!-- Available shops -->
     <string name="colruyt">Colruyt</string>
@@ -31,7 +28,10 @@
     <string name="snackbar_remove_article"> Removed article %1$s</string>
     <string name="snackbar_remove_selection">Removed selection</string>
     <string name="snackbar_undo">UNDO</string>
+    <string name="snackbar_no_articles_to_remove">No articles to remove</string>
+    <string name="snackbar_no_articles_to_copy">No articles to copy</string>
     <string name="snackbar_copy_to_clipboard">Articles copied to clipboard</string>
+    <string name="snackbar_no_article_name">Please fill in the name of the article</string>
 
     <!-- DIALOG STRINGS -->
     <!-- The alertDialog placeholders -->

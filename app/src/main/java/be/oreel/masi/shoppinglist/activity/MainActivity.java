@@ -20,6 +20,10 @@ public class MainActivity extends RecyclerActivity implements LogoManager {
     // === ONCREATE ===
     // ================
 
+    /**
+     * Creates the MainActivity
+     * @param savedInstanceState The saved instance state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

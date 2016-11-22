@@ -95,20 +95,28 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         // getAdapterPosition is used instead of position, since it gives back the right position!
         // Get the targeted article
-        final Article article = articleDataset.get(holder.getAdapterPosition());
+        Article article = articleDataset.get(holder.getAdapterPosition());
         // Set the fields of the article in the viewHolder
         holder.tvName.setText(article.getName());
         holder.tvAmount.setText(article.getAmount());
 
-        final List<TextView> textViews = new ArrayList<>();
+        List<TextView> textViews = new ArrayList<>();
         textViews.add(holder.tvName);
         textViews.add(holder.tvAmount);
 
+        // Strike through if it has to be
         if(article.isStrikethrough()){
             for (TextView tv : textViews) {
                 tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             }
         }
+        else{
+            // Unstrike in case a viewholder gets recycled
+            for (TextView tv : textViews) {
+                tv.setPaintFlags(tv.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+            }
+        }
+
         holder.contentParent.setOnLongClickListener(new View.OnLongClickListener() {
             // Called when the user long-clicks on someView
             public boolean onLongClick(View view) {
@@ -179,7 +187,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
      * Selects the item if it isn't, deselect the item if it already is selected
      * @param holder
      */
-    public void toggleSelection(ViewHolder holder){
+    private void toggleSelection(ViewHolder holder){
 
         // Toggle selection
         boolean isSelected = holder.contentParent.isSelected();
@@ -207,12 +215,14 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
      * Sort articles by name
      */
     public void sortArticlesByName(){
-        Collections.sort(articleDataset, new Comparator<Article>(){
-            public int compare(Article articleA, Article articleB) {
-                return articleA.getName().compareTo(articleB.getName());
-            }
-        });
-        notifyItemRangeChanged(0, articleDataset.size());
+        if(!articleDataset.isEmpty()){
+            Collections.sort(articleDataset, new Comparator<Article>(){
+                public int compare(Article articleA, Article articleB) {
+                    return articleA.getName().compareTo(articleB.getName());
+                }
+            });
+            notifyItemRangeChanged(0, articleDataset.size());
+        }
     }
 
 

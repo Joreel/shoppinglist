@@ -1,5 +1,4 @@
 <resources>
-
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
@@ -8,7 +7,4 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
-
-    <!--About CAB theming, if you use AppCompat you can specify “actionModeBackground” and “actionMenuTextColor” in your base theme-->
-
 </resources>

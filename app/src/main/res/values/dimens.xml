@@ -2,4 +2,11 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <!-- Dialog margins and more -->
+    <dimen name="dialog_vertical_margin">8dp</dimen>
+    <dimen name="dialog_vertical_margin_lone">24dp</dimen>
+    <!-- Size of box -->
+    <integer name="dialog_amount_size_limit">6</integer>
+    <!-- Random size -->
+    <integer name="dialog_name_size_limit">100</integer>
 </resources>

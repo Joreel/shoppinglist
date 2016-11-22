@@ -8,6 +8,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
@@ -71,10 +73,18 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
         articles = getAllArticles(shopName);
         // Create the adapter for the recyclerView
         adapter = new ArticleAdapter(this, articles);
-        getRecyclerView().setAdapter(adapter);
+        // Get the recyclerView
+        RecyclerView recyclerView = getRecyclerView();
+        // Set the adapter
+        recyclerView.setAdapter(adapter);
         // Add the itemTouchHelper
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(getItemTouchCallback());
-        itemTouchHelper.attachToRecyclerView(getRecyclerView());
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(
+                getRecyclerView().getContext(),
+                LinearLayoutManager.VERTICAL);
+        recyclerView.addItemDecoration(dividerItemDecoration);
     }
 
     //TODO document
@@ -367,7 +377,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
 
         // Get the elements from the dialog content
         LinearLayout contentParent = (LinearLayout) getLayoutInflater().
-                inflate(R.layout.dialog_create_article, null);
+                inflate(R.layout.dialog_article, null);
         final EditText inputName = (EditText) contentParent.getChildAt(0);
         final EditText inputAmount = (EditText) contentParent.getChildAt(1);
 
@@ -375,8 +385,11 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 setTitle(R.string.dialog_title_add_article).
                 setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        addArticle(inputName.getText().toString(),
-                                inputAmount.getText().toString());
+                        String name = inputName.getText().toString();
+                        if(!name.trim().isEmpty()){
+                            addArticle(name,
+                                    inputAmount.getText().toString());
+                        }
                     }
                 }).
                 setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
@@ -396,7 +409,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
 
         // Get the elements from the dialog content
         LinearLayout contentParent = (LinearLayout) getLayoutInflater().
-                inflate(R.layout.dialog_create_article, null);
+                inflate(R.layout.dialog_article, null);
         final EditText inputName = (EditText) contentParent.getChildAt(0);
         final EditText inputAmount = (EditText) contentParent.getChildAt(1);
         // Set the existing information in the dialog content
@@ -409,8 +422,11 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 setTitle(R.string.dialog_title_edit_article).
                 setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        updateArticle(position, inputName.getText().toString(),
-                                inputAmount.getText().toString());
+                        String name = inputName.getText().toString();
+                        if(!name.trim().isEmpty()) {
+                            updateArticle(position, name,
+                                    inputAmount.getText().toString());
+                        }
                     }
                 }).
                 setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
@@ -431,7 +447,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
 
         // Get the dialog content
         LinearLayout contentParent = (LinearLayout) getLayoutInflater().
-                inflate(R.layout.dialog_update_article, null);
+                inflate(R.layout.dialog_article_name, null);
         final EditText input = (EditText) contentParent.getChildAt(0);
         // Set the current name of the article in the textbox
         input.setHint(R.string.placeholder_article_name);
@@ -441,7 +457,10 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 setTitle(R.string.dialog_title_edit_article_name).
                 setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        updateArticleName(position, input.getText().toString());
+                        String name = input.getText().toString();
+                        if(!name.trim().isEmpty()) {
+                            updateArticleName(position, name);
+                        }
                     }
                 }).
                 setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
@@ -462,7 +481,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
 
         // Get the dialog content
         LinearLayout contentParent = (LinearLayout) getLayoutInflater().
-                inflate(R.layout.dialog_update_article, null);
+                inflate(R.layout.dialog_article_amount, null);
         final EditText input = (EditText) contentParent.getChildAt(0);
         // Set the current amount of the article in the textbox
         input.setHint(R.string.placeholder_article_amount);
@@ -512,8 +531,6 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     // ========================
     // === UPDATE FUNCTIONS ===
     // ========================
-
-    //TODO optimize
 
     /**
      * Updates the name and amount of an article at a certain position in the list
@@ -614,11 +631,15 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     public void removeArticles(){
         final List<Article> articlesBackup;
         String snackbarText;
+        boolean hasArticles = !articles.isEmpty();
 
         if(adapter.hasSelectedItems()){
             snackbarText = getString(R.string.snackbar_remove_selection);
             articlesBackup = new ArrayList<>();
             List<Integer> positions = adapter.getSelectedPositions();
+            // Make sure the positions are deleted from biggest to smallest
+            Collections.sort(positions);
+            Collections.reverse(positions);
             for(int position : positions){
                 Article article = articles.get(position);
                 articlesBackup.add(article);
@@ -627,22 +648,28 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                 datasource.deleteArticle(article);
             }
         }
-        else{
+        else if(hasArticles) {
             snackbarText = String.format(getString(R.string.snackbar_remove_all), shopName);
             articlesBackup = new ArrayList<>(articles);
             articles.clear();
             adapter.notifyItemRangeRemoved(0, articlesBackup.size());
             datasource.deleteAllArticles(shopName);
         }
+        else{
+            snackbarText = getString(R.string.snackbar_no_articles_to_remove);
+            articlesBackup = null;
+        }
         // Show snackbar
         Snackbar snackbar = Snackbar.
-                make(getCoordinatorLayout(), snackbarText, Snackbar.LENGTH_LONG).
-                setAction(getString(R.string.snackbar_undo), new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        undoRemove(articlesBackup);
-                    }
-                });
+                make(getCoordinatorLayout(), snackbarText, Snackbar.LENGTH_LONG);
+        if(hasArticles){
+            snackbar.setAction(getString(R.string.snackbar_undo), new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    undoRemove(articlesBackup);
+                }
+            });
+        }
         snackbar.show();
     }
 
@@ -670,6 +697,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @param removedArticles The removed articles to add back to the list
      */
     private void undoRemove(List<Article> removedArticles){
+        Collections.reverse(removedArticles);
         for (Article article : removedArticles){
             addArticle(article);
         }
@@ -680,15 +708,23 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     // =======================
 
     private void copyArticlesToClipboard(){
-        //http://stackoverflow.com/questions/6624763/android-copy-to-clipboard-selected-text-from-a-textview
-        //  Add details to clipboard
-        ClipData clip = ClipData.newPlainText("Copied Details", adapter.getArticlesToString());
-        clipboard.setPrimaryClip(clip);
+        String snackbarText;
+        boolean hasArticles = !articles.isEmpty();
+
+        if(hasArticles){
+            snackbarText = getString(R.string.snackbar_copy_to_clipboard);
+            //  Add details to clipboard
+            ClipData clip = ClipData.newPlainText("Copied Details", adapter.getArticlesToString());
+            clipboard.setPrimaryClip(clip);
+        }
+        else{
+            snackbarText = getString(R.string.snackbar_no_articles_to_copy);
+        }
 
         //  Add snackbar notification
         Snackbar snackbar = Snackbar.make(
                 getCoordinatorLayout(),
-                getString(R.string.snackbar_copy_to_clipboard),
+                snackbarText,
                 Snackbar.LENGTH_SHORT);
         snackbar.show();
     }
