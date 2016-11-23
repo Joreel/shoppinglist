@@ -12,7 +12,7 @@ public class Article implements Comparable<Article> {
     // =================
 
     private long id;
-    private String shop;
+    private long shopId;
     private String name;
     private int amount;
     private String measure;
@@ -64,19 +64,19 @@ public class Article implements Comparable<Article> {
     }
 
     /**
-     * Returns the name of the article's shop
-     * @return The name of the article's shop
+     * Returns the name of the article's shopId
+     * @return The name of the article's shopId
      */
-    public String getShop() {
-        return shop;
+    public long getShopId() {
+        return shopId;
     }
 
     /**
-     * Sets the name of the article's shop
-     * @param shop The shop name to be set
+     * Sets the name of the article's shopId
+     * @param shopId The shopId name to be set
      */
-    public void setShop(String shop) {
-        this.shop = shop;
+    public void setShopId(long shopId) {
+        this.shopId = shopId;
     }
 
     /**

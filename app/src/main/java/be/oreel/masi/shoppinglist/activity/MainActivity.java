@@ -6,15 +6,22 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import be.oreel.masi.shoppinglist.adapter.LogoManager;
+import be.oreel.masi.shoppinglist.adapter.ShopManager;
 import be.oreel.masi.shoppinglist.R;
-import be.oreel.masi.shoppinglist.adapter.LogoAdapter;
-import be.oreel.masi.shoppinglist.model.Logo;
+import be.oreel.masi.shoppinglist.adapter.ShopAdapter;
+import be.oreel.masi.shoppinglist.db.ShopDataSource;
+import be.oreel.masi.shoppinglist.model.Shop;
 
 /**
  * Activity displaying the different shops
  */
-public class MainActivity extends RecyclerActivity implements LogoManager {
+public class MainActivity extends RecyclerActivity implements ShopManager {
+
+    // =================
+    // === VARIABLES ===
+    // =================
+
+    private ShopDataSource datasource;
 
     // ================
     // === ONCREATE ===
@@ -28,15 +35,17 @@ public class MainActivity extends RecyclerActivity implements LogoManager {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Create the list of logos
-        Logo[] logos = {
-                new Logo(getString(R.string.carrefour), R.drawable.carrefour_logo),
-                new Logo(getString(R.string.colruyt), R.drawable.colruyt_logo),
-                new Logo(getString(R.string.spar), R.drawable.spar_logo),
+        // Create the list of shops
+        Shop[] shops = {
+                new Shop(getString(R.string.carrefour), R.drawable.carrefour_logo),
+                new Shop(getString(R.string.colruyt), R.drawable.colruyt_logo),
+                new Shop(getString(R.string.spar), R.drawable.spar_logo),
         };
 
+        datasource = new ShopDataSource(this);
+
         // Set the logo adapter to the recyclerView
-        getRecyclerView().setAdapter(new LogoAdapter(this, logos));
+        getRecyclerView().setAdapter(new ShopAdapter(this, shops));
     }
 
     // =================================================
@@ -64,6 +73,30 @@ public class MainActivity extends RecyclerActivity implements LogoManager {
             // Hides the fab
             fab.hide();
         }
+    }
+
+    // =========================================
+    // === OVERRIDE BASIC ACTIVITY FUNCTIONS ===
+    // =========================================
+
+    /**
+     * Resume of the activity
+     */
+    @Override
+    protected void onResume() {
+        // Opens the database
+        datasource.open();
+        super.onResume();
+    }
+
+    /**
+     * Pause of the activity
+     */
+    @Override
+    protected void onPause() {
+        // Close the database
+        datasource.close();
+        super.onPause();
     }
 
     // ============================
@@ -110,7 +143,7 @@ public class MainActivity extends RecyclerActivity implements LogoManager {
     public void openArticleActivity(String shopName){
         // Create the intent to open the ArticleActivity
         Intent intent = new Intent(this, ArticleActivity.class);
-        intent.putExtra(getString(R.string.bundle_shopname_id), shopName);
+        intent.putExtra(getString(R.string.bundle_shop_id), datasource.getShop(shopName));
         // Start the ArticleActivity
         startActivity(intent);
         // Set the right to left animation

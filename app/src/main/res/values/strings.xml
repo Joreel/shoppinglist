@@ -3,8 +3,8 @@
     <string name="app_name">ShopShop</string>
     <!-- Default article activity title -->
     <string name="article_activity_title">Articles</string>
-    <!-- The id to pass the shop name from one activity to another -->
-    <string name="bundle_shopname_id">SHOPNAME</string>
+    <!-- The id to pass the shopId name from one activity to another -->
+    <string name="bundle_shop_id">SHOP</string>
     <!-- The database name -->
     <string name="db_name">shoplist</string>
     <!-- Menu actions -->

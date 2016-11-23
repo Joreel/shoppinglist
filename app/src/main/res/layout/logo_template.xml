@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <ImageView
-        android:id="@+id/logo"
+        android:id="@+id/shop"
         android:layout_height="96dp"
         android:clickable="true"
         android:layout_width="match_parent"

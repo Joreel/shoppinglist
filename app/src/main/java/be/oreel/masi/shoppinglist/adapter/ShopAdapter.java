@@ -8,19 +8,19 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import be.oreel.masi.shoppinglist.R;
-import be.oreel.masi.shoppinglist.model.Logo;
+import be.oreel.masi.shoppinglist.model.Shop;
 
 /**
  * The adapter for the recyclerView of the MainActivity
  */
-public class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHolder> {
+public class ShopAdapter extends RecyclerView.Adapter<ShopAdapter.ViewHolder> {
 
     // =================
     // === VARIABLES ===
     // =================
 
-    private LogoManager logoManager;
-    private Logo[] logos;
+    private ShopManager shopManager;
+    private Shop[] shops;
 
     // ===================
     // === CONSTRUCTOR ===
@@ -28,12 +28,12 @@ public class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHolder> {
 
     /**
      * The conctructor
-     * @param logoManager The logo manager
-     * @param logos An array of logos
+     * @param shopManager The logo manager
+     * @param shops An array of shops
      */
-    public LogoAdapter(LogoManager logoManager, Logo[] logos) {
-        this.logoManager = logoManager;
-        this.logos = logos;
+    public ShopAdapter(ShopManager shopManager, Shop[] shops) {
+        this.shopManager = shopManager;
+        this.shops = shops;
     }
 
     // ==================
@@ -47,7 +47,7 @@ public class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHolder> {
         public ImageView ivLogo;
         public ViewHolder(LinearLayout v) {
             super(v);
-            ivLogo = (ImageView) v.findViewById(R.id.logo);
+            ivLogo = (ImageView) v.findViewById(R.id.shop);
         }
     }
 
@@ -62,10 +62,10 @@ public class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHolder> {
      * @return The new viewHolder
      */
     @Override
-    public LogoAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ShopAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LinearLayout v = (LinearLayout) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.logo_template, parent, false);
-        return new LogoAdapter.ViewHolder(v);
+        return new ShopAdapter.ViewHolder(v);
     }
 
     /**
@@ -74,16 +74,16 @@ public class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHolder> {
      * @param position The position of the viewHolder in the list
      */
     @Override
-    public void onBindViewHolder(LogoAdapter.ViewHolder holder, int position) {
-        // Get the targeted logo
-        final Logo logo = logos[position];
-        // Set the fields of the logo to the viewHolder
-        holder.ivLogo.setImageResource(logo.getDrawableRes());
+    public void onBindViewHolder(ShopAdapter.ViewHolder holder, int position) {
+        // Get the targeted shop
+        final Shop shop = shops[position];
+        // Set the fields of the shop to the viewHolder
+        holder.ivLogo.setImageResource(shop.getLogoRes());
         // On click open the corresponding ArticleActivity
         holder.ivLogo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                logoManager.openArticleActivity(logo.getShopname());
+                shopManager.openArticleActivity(shop.getName());
             }
         });
     }
@@ -94,6 +94,6 @@ public class LogoAdapter extends RecyclerView.Adapter<LogoAdapter.ViewHolder> {
      */
     @Override
     public int getItemCount() {
-        return logos.length;
+        return shops.length;
     }
 }

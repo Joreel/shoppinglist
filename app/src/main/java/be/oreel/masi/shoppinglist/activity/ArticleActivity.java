@@ -24,6 +24,7 @@ import java.util.List;
 
 import be.oreel.masi.shoppinglist.adapter.ArticleManager;
 import be.oreel.masi.shoppinglist.adapter.ArticleAdapter;
+import be.oreel.masi.shoppinglist.model.Shop;
 import be.oreel.masi.shoppinglist.model.Article;
 import be.oreel.masi.shoppinglist.model.ToolbarMode;
 import be.oreel.masi.shoppinglist.db.ArticleDataSource;
@@ -38,7 +39,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     // === VARIABLES ===
     // =================
 
-    private String shopName;
+    private Shop shop;
     private ArticleDataSource datasource;
     private ArticleAdapter adapter;
     private List<Article> articles;
@@ -60,17 +61,20 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
         // Get the selected shop name from the MainActivity
         // Set default value if no shop name was found
         Bundle b = getIntent().getExtras();
-        shopName = b != null ? b.getString(getString(R.string.bundle_shopname_id)) :
+        shop = b != null ? (Shop) b.getSerializable(getString(R.string.bundle_shop_id)) : null;
+        String shopName = shop != null ? shop.getName() :
                 getString(R.string.article_activity_title);
         // Set the shop name as the title of this activity
         if(getSupportActionBar() != null){
             getSupportActionBar().setTitle(shopName);
         }
 
+        // Set the datasource
+        datasource = new ArticleDataSource(this);
         // Set the clipboard manager
         clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         // Get all articles from the shop
-        articles = getAllArticles(shopName);
+        articles = getAllArticles();
         // Create the adapter for the recyclerView
         adapter = new ArticleAdapter(this, articles);
         // Get the recyclerView
@@ -609,7 +613,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      */
     private void addArticle(String name, int amount, String measure){
         // Create a new article in the database
-        Article newArticle = datasource.createArticle(shopName, name, amount, measure,
+        Article newArticle = datasource.createArticle(shop.getId(), name, amount, measure,
                 false, articles.size());
         // Add the new article to the list
         articles.add(newArticle);
@@ -623,7 +627,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      */
     private void addArticle(Article article){
         // Adds a new article to the database
-        Article newArticle = datasource.createArticle(shopName, article.getName(),
+        Article newArticle = datasource.createArticle(shop.getId(), article.getName(),
                 article.getAmount(), article.getMeasure(),
                 article.isStrikethrough(), article.getPriority());
         // Adds the new article to the list
@@ -709,13 +713,11 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @param shopname The name of the shop
      * @return All the articles of the shop
      */
-    public List<Article> getAllArticles(String shopname) {
-        //TODO move this to onCreate
-        datasource = new ArticleDataSource(this);
+    public List<Article> getAllArticles() {
         // Open the database
         datasource.open();
         // Get all the articles from the chosen shop
-        return datasource.getAllArticles(shopname);
+        return datasource.getAllArticles(shop.getId());
     }
 
     // ========================
@@ -780,7 +782,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
             Collections.reverse(articlesBackup);
         } // If there are articles
         else if(hasArticles) {
-            snackbarText = String.format(getString(R.string.snackbar_remove_all), shopName);
+            snackbarText = String.format(getString(R.string.snackbar_remove_all), shop.getName());
             // Backup all articles in case the action is undone
             articlesBackup = new ArrayList<>(articles);
             // Clear the article list
@@ -788,7 +790,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
             // Notify the recyclerView that all items were removed
             adapter.notifyItemRangeRemoved(0, articlesBackup.size());
             // Delete all articles of the cuurent shop in the database
-            datasource.deleteAllArticles(shopName);
+            datasource.deleteAllArticles(shop.getId());
         }
         else{
             // Prepare the snackbar in case there are no articles
@@ -822,7 +824,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      */
     private void undoRemove(Article article, int position){
         // Add removed article to the DB
-        Article newArticle = datasource.createArticle(article.getShop(),
+        Article newArticle = datasource.createArticle(article.getShopId(),
                 article.getName(), article.getAmount(), article.getMeasure(),
                 article.isStrikethrough(), article.getPriority());
         // Add the article to the list at the right position
