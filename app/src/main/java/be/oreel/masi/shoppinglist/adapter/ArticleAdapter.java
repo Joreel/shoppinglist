@@ -1,6 +1,7 @@
 package be.oreel.masi.shoppinglist.adapter;
 
 import android.graphics.Paint;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +30,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
     private ArticleManager articleManager;
     private List<Article> articleDataset;
     private List<ViewHolder> selectedItems;
+    private boolean reverseSort;
 
     // ===================
     // === CONSTRUCTOR ===
@@ -43,6 +45,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
         this.articleManager = articleManager;
         this.articleDataset = articleDataset;
         selectedItems = new ArrayList<>();
+        reverseSort = false;
     }
 
     // ==================
@@ -243,6 +246,11 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
                     return articleA.getName().compareTo(articleB.getName());
                 }
             });
+            // Reverse the sort if pressed again
+            if(reverseSort){
+                Collections.reverse(articleDataset);
+            }
+            reverseSort = !reverseSort;
             // Notify the recyclerView that the list items have changed
             notifyItemRangeChanged(0, articleDataset.size());
         }
