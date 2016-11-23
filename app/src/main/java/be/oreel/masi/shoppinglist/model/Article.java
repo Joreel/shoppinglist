@@ -14,7 +14,8 @@ public class Article implements Comparable<Article> {
     private long id;
     private String shop;
     private String name;
-    private String amount;
+    private int amount;
+    private String measure;
     private boolean strikethrough;
     private int priority;
 
@@ -28,7 +29,7 @@ public class Article implements Comparable<Article> {
      */
     @Override
     public String toString(){
-        return getAmount() + " " + getName();
+        return getAmount() + (getMeasure() != null ? getMeasure() : "") + " " + getName();
     }
 
     /**
@@ -98,16 +99,32 @@ public class Article implements Comparable<Article> {
      * Returns the amount of the article
      * @return The amount of the article
      */
-    public String getAmount() {
+    public int getAmount() {
         return amount;
     }
 
     /**
-     * Sets the amount of the article
+     * Sets the amount of the article (minimum 1)
      * @param amount The amount to be set
      */
-    public void setAmount(String amount) {
-        this.amount = amount;
+    public void setAmount(int amount) {
+        this.amount = amount > 0 ? amount : 1;
+    }
+
+    /**
+     * Returns the measure of the article
+     * @return The measure of the article
+     */
+    public String getMeasure(){
+        return this.measure;
+    }
+
+    /**
+     * Sets the measure of the article
+     * @param measure The new measure
+     */
+    public void setMeasure(String measure){
+        this.measure = measure;
     }
 
     /**

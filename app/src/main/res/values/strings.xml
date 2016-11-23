@@ -36,7 +36,9 @@
     <!-- DIALOG STRINGS -->
     <!-- The alertDialog placeholders -->
     <string name="placeholder_article_name">Article name</string>
-    <string name="placeholder_article_amount">Article amount</string>
+    <string name="placeholder_article_amount">Article amount (1 by default)</string>
+    <string name="placeholder_article_measure">Article measure (optional)</string>
+
     <!-- The alertDialog titles -->
     <string name="dialog_title_add_article">Add article</string>
     <string name="dialog_title_edit_article">Edit article</string>

@@ -28,6 +28,7 @@ public class ArticleDataSource {
             ArticleDBHelper.COLUMN_SHOP_NAME,
             ArticleDBHelper.COLUMN_ARTICLE_NAME,
             ArticleDBHelper.COLUMN_AMOUNT,
+            ArticleDBHelper.COLUMN_MEASURE,
             ArticleDBHelper.COLUMN_STRIKETHROUGH,
             ArticleDBHelper.COLUMN_PRIORITY};
 
@@ -71,13 +72,14 @@ public class ArticleDataSource {
      * @param priority The priority of the article in the list
      * @return The added article
      */
-    public Article createArticle(String shop, String name, String amount,
+    public Article createArticle(String shop, String name, int amount, String measure,
                                  boolean strikethrough, int priority) {
         // Add all the values of the article
         ContentValues values = new ContentValues();
         values.put(ArticleDBHelper.COLUMN_SHOP_NAME, shop);
         values.put(ArticleDBHelper.COLUMN_ARTICLE_NAME, name);
-        values.put(ArticleDBHelper.COLUMN_AMOUNT, amount);
+        values.put(ArticleDBHelper.COLUMN_AMOUNT, amount > 0 ? amount : 1);
+        values.put(ArticleDBHelper.COLUMN_MEASURE, measure);
         values.put(ArticleDBHelper.COLUMN_STRIKETHROUGH, strikethrough ? 1 : 0);
         values.put(ArticleDBHelper.COLUMN_PRIORITY, priority);
         // Insert the article in the database
@@ -102,7 +104,8 @@ public class ArticleDataSource {
         // Add the values to be update
         ContentValues values = new ContentValues();
         values.put(ArticleDBHelper.COLUMN_ARTICLE_NAME, article.getName());
-        values.put(ArticleDBHelper.COLUMN_AMOUNT, article.getAmount());
+        values.put(ArticleDBHelper.COLUMN_AMOUNT, article.getAmount() > 0 ? article.getAmount() : 1);
+        values.put(ArticleDBHelper.COLUMN_MEASURE, article.getMeasure());
         values.put(ArticleDBHelper.COLUMN_STRIKETHROUGH, article.isStrikethrough() ? 1 : 0);
         values.put(ArticleDBHelper.COLUMN_PRIORITY, article.getPriority());
         // Update the article
@@ -172,9 +175,10 @@ public class ArticleDataSource {
         article.setId(cursor.getLong(0));
         article.setShop(cursor.getString(1));
         article.setName(cursor.getString(2));
-        article.setAmount(cursor.getString(3));
-        article.setStrikethrough(cursor.getInt(4) == 1);
-        article.setPriority(cursor.getInt(5));
+        article.setAmount(cursor.getInt(3));
+        article.setMeasure(cursor.getString(4));
+        article.setStrikethrough(cursor.getInt(5) == 1);
+        article.setPriority(cursor.getInt(6));
         return article;
     }
 

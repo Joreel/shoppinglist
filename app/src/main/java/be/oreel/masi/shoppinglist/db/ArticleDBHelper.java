@@ -18,19 +18,22 @@ public class ArticleDBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_SHOP_NAME = "shop";
     public static final String COLUMN_ARTICLE_NAME = "name";
     public static final String COLUMN_AMOUNT = "amount";
+    public static final String COLUMN_MEASURE = "measure";
     public static final String COLUMN_STRIKETHROUGH = "strikethrough";
     public static final String COLUMN_PRIORITY = "priority";
 
     private static final String DATABASE_NAME = "article.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     // Database creation sql statement
     private static final String DATABASE_CREATE =
             "CREATE TABLE IF NOT EXISTS " + TABLE_ARTICLE +"( "+
             COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-            COLUMN_SHOP_NAME + " TEXT NOT NULL,"+
-            COLUMN_ARTICLE_NAME + " TEXT NOT NULL,"+
-            COLUMN_AMOUNT + " TEXT NOT NULL," +
+            COLUMN_SHOP_NAME + " TEXT NOT NULL," +
+            COLUMN_ARTICLE_NAME + " TEXT NOT NULL," +
+            COLUMN_AMOUNT + " INTEGER NOT NULL DEFAULT 1 CHECK(" +
+                    COLUMN_AMOUNT + " > 0), " +
+            COLUMN_MEASURE + " TEXT," +
             COLUMN_STRIKETHROUGH + " INTEGER NOT NULL DEFAULT 0 CHECK("+
                     COLUMN_STRIKETHROUGH+" IN (0,1))," +
             COLUMN_PRIORITY + " INTEGER NOT NULL DEFAULT 0" + ");";

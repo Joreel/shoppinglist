@@ -94,7 +94,12 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
         Article article = articleDataset.get(holder.getAdapterPosition());
         // Set the fields of the article in the viewHolder
         holder.tvName.setText(article.getName());
-        holder.tvAmount.setText(article.getAmount());
+        // Get the amount & measure
+        String measure = article.getMeasure();
+        measure = measure != null ? measure : "";
+        String amount = article.getAmount() + measure;
+        // Set the concatenation of the two in the amount field
+        holder.tvAmount.setText(amount);
         // Put the textViews in a list
         List<TextView> textViews = new ArrayList<>();
         textViews.add(holder.tvName);

@@ -449,16 +449,21 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
         // Get the editText views from the dialog
         final EditText inputName = (EditText) contentParent.getChildAt(0);
         final EditText inputAmount = (EditText) contentParent.getChildAt(1);
+        final EditText inputMeasure = (EditText) contentParent.getChildAt(2);
 
         builder.setView(contentParent).
                 setTitle(R.string.dialog_title_add_article).
                 setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // When pressing Ok, add the article to list if the name field is not empty
-                        String name = inputName.getText().toString();
-                        if(!name.trim().isEmpty()){
-                            addArticle(name,
-                                    inputAmount.getText().toString());
+                        String name = inputName.getText().toString().trim();
+                        if(!name.isEmpty()){
+                            String measure = inputMeasure.getText().toString().trim();
+
+                            addArticle(
+                                    name,
+                                    tryParseAmount(inputAmount.getText().toString()),
+                                    measure.isEmpty() ? null : measure);
                         }
                     }
                 }).
@@ -481,11 +486,15 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
         // Get the editText views from the dialog
         final EditText inputName = (EditText) contentParent.getChildAt(0);
         final EditText inputAmount = (EditText) contentParent.getChildAt(1);
+        final EditText inputMeasure = (EditText) contentParent.getChildAt(2);
         // Set the existing information in the dialog content
         inputName.setHint(R.string.placeholder_article_name);
         inputName.setText(article.getName());
         inputAmount.setHint(R.string.placeholder_article_amount);
-        inputAmount.setText(article.getAmount());
+        String amount = article.getAmount() + "";
+        inputAmount.setText(amount);
+        inputMeasure.setHint(R.string.placeholder_article_measure);
+        inputMeasure.setText(article.getMeasure());
 
         builder.setView(contentParent).
                 setTitle(R.string.dialog_title_edit_article).
@@ -494,8 +503,13 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
                         // Update the article data if the name field is not empty
                         String name = inputName.getText().toString();
                         if(!name.trim().isEmpty()) {
-                            updateArticle(position, name,
-                                    inputAmount.getText().toString());
+                            String measure = inputMeasure.getText().toString().trim();
+
+                            updateArticle(
+                                    position,
+                                    name,
+                                    tryParseAmount(inputAmount.getText().toString()),
+                                    measure.isEmpty() ? null : measure);
                         }
                     }
                 }).
@@ -549,22 +563,38 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
         // Get the dialog content
         LinearLayout contentParent = (LinearLayout) getLayoutInflater().
                 inflate(R.layout.dialog_article_amount, null);
-        final EditText input = (EditText) contentParent.getChildAt(0);
+        final EditText inputAmount = (EditText) contentParent.getChildAt(0);
+        final EditText inputMeasure = (EditText) contentParent.getChildAt(1);
         // Set the current amount of the article in the textbox
-        input.setHint(R.string.placeholder_article_amount);
-        input.setText(article.getAmount());
+        inputAmount.setHint(R.string.placeholder_article_amount);
+        String amount = article.getAmount() + "";
+        inputAmount.setText(amount);
+        inputMeasure.setHint(R.string.placeholder_article_measure);
+        inputMeasure.setText(article.getMeasure());
 
         builder.setView(contentParent).
                 setTitle(R.string.dialog_title_edit_article_amount).
                 setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // Update the article amount
-                        updateArticleAmount(position, input.getText().toString());
+                        String measure = inputMeasure.getText().toString().trim();
+                        updateArticleAmount(position,
+                                tryParseAmount(inputAmount.getText().toString()),
+                                measure.isEmpty() ? null : measure);
                     }
                 }).
                 setNegativeButton(R.string.dialog_cancel, null).
                 create().
                 show();
+    }
+
+    private int tryParseAmount(String amount) {
+        try {
+            return Integer.parseInt(amount);
+        } catch(NumberFormatException nfe) {
+            // default value
+            return 1;
+        }
     }
 
     // =====================
@@ -575,10 +605,11 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * Adds a new article to the list
      * @param name The name of the new article
      * @param amount The amount of the new article
+     * @param measure The amount of the new measure
      */
-    private void addArticle(String name, String amount){
+    private void addArticle(String name, int amount, String measure){
         // Create a new article in the database
-        Article newArticle = datasource.createArticle(shopName, name, amount,
+        Article newArticle = datasource.createArticle(shopName, name, amount, measure,
                 false, articles.size());
         // Add the new article to the list
         articles.add(newArticle);
@@ -593,7 +624,8 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     private void addArticle(Article article){
         // Adds a new article to the database
         Article newArticle = datasource.createArticle(shopName, article.getName(),
-                article.getAmount(), article.isStrikethrough(), article.getPriority());
+                article.getAmount(), article.getMeasure(),
+                article.isStrikethrough(), article.getPriority());
         // Adds the new article to the list
         articles.add(newArticle);
         // Notify the recyclerView that an item was added
@@ -609,13 +641,15 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @param position The position of the article in the list
      * @param newName The new name of the article
      * @param newAmount The new amount of the article
+     * @param newMeasure The new measure of the article
      */
-    private void updateArticle(int position, String newName, String newAmount) {
+    private void updateArticle(int position, String newName, int newAmount, String newMeasure) {
         // Get the article from the list
         Article article = articles.get(position);
         // Update the article data
         article.setName(newName);
         article.setAmount(newAmount);
+        article.setMeasure(newMeasure);
         // Notify the recyclerView that an item was updated
         adapter.notifyItemChanged(position);
         // Update the article in the database
@@ -642,12 +676,14 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * Updates the amount of an article
      * @param position The position of the article in the list
      * @param newAmount The new amount of the article
+     * @param newMeasure The new measure of the article
      */
-    private void updateArticleAmount(int position, String newAmount) {
+    private void updateArticleAmount(int position, int newAmount, String newMeasure) {
         // Get the article from the list
         Article article = articles.get(position);
         // Update the article amount
         article.setAmount(newAmount);
+        article.setMeasure(newMeasure);
         // Notify the recyclerView that an item was updated
         adapter.notifyItemChanged(position);
         // Update the article in the database
@@ -674,6 +710,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
      * @return All the articles of the shop
      */
     public List<Article> getAllArticles(String shopname) {
+        //TODO move this to onCreate
         datasource = new ArticleDataSource(this);
         // Open the database
         datasource.open();
@@ -786,7 +823,7 @@ public class ArticleActivity extends RecyclerActivity implements ArticleManager 
     private void undoRemove(Article article, int position){
         // Add removed article to the DB
         Article newArticle = datasource.createArticle(article.getShop(),
-                article.getName(), article.getAmount(),
+                article.getName(), article.getAmount(), article.getMeasure(),
                 article.isStrikethrough(), article.getPriority());
         // Add the article to the list at the right position
         articles.add(position, newArticle);

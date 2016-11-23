@@ -6,7 +6,8 @@
     <dimen name="dialog_vertical_margin">8dp</dimen>
     <dimen name="dialog_vertical_margin_lone">24dp</dimen>
     <!-- Size of box -->
-    <integer name="dialog_amount_size_limit">6</integer>
+    <integer name="dialog_amount_size_limit">4</integer>
+    <integer name="dialog_measure_size_limit">2</integer>
     <!-- Random size -->
     <integer name="dialog_name_size_limit">100</integer>
 </resources>

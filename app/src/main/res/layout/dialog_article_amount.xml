@@ -4,14 +4,26 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
     <EditText
-        android:id="@+id/article_name"
-        android:inputType="textNoSuggestions|text"
+        android:id="@+id/article_amount"
+        android:inputType="textNoSuggestions|number"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dialog_vertical_margin_lone"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/dialog_vertical_margin_lone"
+        android:layout_marginBottom="@dimen/dialog_vertical_margin"
         android:maxLength="@integer/dialog_amount_size_limit"
         android:hint="@string/placeholder_article_amount" />
+
+    <EditText
+        android:id="@+id/article_measure"
+        android:inputType="textNoSuggestions|text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_vertical_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/dialog_vertical_margin_lone"
+        android:maxLength="@integer/dialog_measure_size_limit"
+        android:hint="@string/placeholder_article_measure" />
 </LinearLayout>
