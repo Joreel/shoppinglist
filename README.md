@@ -18,7 +18,7 @@ The 'leave app' action (imposed in the assignment) only brings the user back to 
 
 ## Licence
 
-    Shopping list Android project 
+    ShopShop - Shopping list Android project 
     Copyright (c) 2016 Johan Oreel (https://github.com/Joreel)
 
     Licensed under the Apache License, Version 2.0 (the "License");
