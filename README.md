@@ -1,4 +1,4 @@
-# ShopShop shoppinglist
+# ShopShop: a simple shopping list app
 ## Description
 This is a small Android shopping list app.
 It illustrates how to implement the following features in a recyclerview:
